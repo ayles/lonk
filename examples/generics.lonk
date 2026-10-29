@@ -1,0 +1,57 @@
+// The same generic function preserves each argument's concrete type.
+let identity = fn<T>(value: T) -> T {
+    value
+};
+let Box = type<T> {
+    value: T;
+};
+let boxed = fn<T>(value: T) -> Box<T> {
+    {
+        value = value;
+    }
+};
+// R captures everything except x. Extract it by a typed copy, then rebuild.
+let replace_x = fn<R>(value: {
+    x: int;
+    ...R;
+}, next: int) -> {
+    x: int;
+    ...R;
+} {
+    let rest: {
+        ...R;
+    } = value;
+    {
+        ...rest;
+        x = next;
+    }
+};
+let point = {
+    x = 1;
+    label = "preserved";
+    enabled = true;
+};
+// Extracting R also preserves an unknown runtime tail, without evaluating x.
+let rest = fn<R>(value: {
+    x: int;
+    ...R;
+}) -> {
+    ...R;
+} {
+    value
+};
+let open: {
+    x: int;
+    ...;
+} = {
+    x = 1 / 0;
+    hidden = "still here";
+};
+{
+    integer = identity<int>(42);
+    text = identity("hello");
+    boxed = boxed(true);
+    original = point;
+    updated = replace_x(point, 10);
+    extracted = rest(open);
+}

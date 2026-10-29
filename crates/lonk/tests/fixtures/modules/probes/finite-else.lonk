@@ -1,0 +1,17 @@
+// Expected checker error: else does not subtract earlier finite literal cases.
+let classify = fn(mode: ("fast" | "slow")) -> int {
+    match mode {
+        "fast" => {
+            return 1;
+        };
+        else => {
+            let slow: "slow" = mode;
+            if slow == "slow" {
+                2
+            } else {
+                3
+            }
+        };
+    }
+};
+classify("slow")

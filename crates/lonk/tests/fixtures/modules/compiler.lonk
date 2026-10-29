@@ -1,0 +1,10 @@
+let Package = types.Package;
+fn(system: str, version: str = "1") -> Package {
+    return {
+        name = "cc";
+        version = version;
+        system = system;
+        inputs = [];
+        script = "build-compiler";
+    };
+}

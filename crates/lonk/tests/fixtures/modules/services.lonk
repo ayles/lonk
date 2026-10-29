@@ -1,0 +1,62 @@
+let Config = types.Config;
+let Module = types.Module;
+{
+    ssh = fn(enabled: bool, port: int = 22) -> Module {
+        fn(config: &Config) {
+            if !enabled {
+                return;
+            };
+            config.services.push({
+                name = "sshd";
+                description = "Secure shell";
+                port = port;
+                command = [
+                    "sshd",
+                    "-p",
+                    port.to_str(),
+                ];
+                after = [
+                    "network",
+                ];
+            });
+        }
+    };
+    editor = fn(package_name: str) -> Module {
+        fn(config: &Config) {
+            config.services.push({
+                name = "editor";
+                description = "Shared editor";
+                command = [
+                    package_name,
+                    "--server",
+                ];
+                after = [
+                    "network",
+                ];
+            });
+        }
+    };
+    hostname = fn(name: str) -> Module {
+        fn(config: &Config) {
+            config.hostname = name;
+        }
+    };
+    firewall = fn() -> Module {
+        fn(config: &Config) {
+            let ports: [int] = [];
+            for service in config.services {
+                match service {
+                    {
+                        port: int;
+                        ...;
+                    } => {
+                        ports.push(service.port);
+                    };
+                    else => {
+                    };
+                };
+            };
+            config.firewall = ports;
+        }
+    };
+}

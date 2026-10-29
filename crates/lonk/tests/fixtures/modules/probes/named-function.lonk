@@ -1,0 +1,3 @@
+// Expected parser error: named declaration sugar is not implemented.
+fn get(value: int) -> int { return value; }
+get(42)

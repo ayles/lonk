@@ -1,0 +1,19 @@
+[package]
+name = "lonk-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license-file.workspace = true
+description = "Command-line tools for the Lonk programming language"
+repository.workspace = true
+
+[[bin]]
+name = "lonk"
+path = "src/main.rs"
+doc = false
+
+[lints]
+workspace = true
+
+[dependencies]
+lonk = { version = "0.1.0", path = "../lonk" }

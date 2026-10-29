@@ -1,0 +1,27 @@
+// Interfaces are exported as ordinary type values.
+let Package = type {
+    name: str;
+    version: str;
+    system: str;
+    inputs: [str];
+    script: str;
+};
+let Service = type {
+    name: str;
+    description: str;
+    command: [str];
+    after: [str];
+    port?: int;
+};
+let Config = type {
+    hostname: str;
+    packages: [Package];
+    services: [Service];
+    firewall: [int];
+};
+{
+    Package = Package;
+    Service = Service;
+    Config = Config;
+    Module = type fn(&Config);
+}

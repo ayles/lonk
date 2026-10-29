@@ -1,0 +1,19 @@
+// A delayed URL keeps the version from the point where it was assigned.
+let package: {
+    version: str;
+    ...;
+} = {
+    version = "1.0";
+};
+package.url = "download/" + package.version;
+let original = package;
+package.version = "2.0";
+let result = {
+    summary = {
+        currentVersion = package.version;
+        originalVersion = original.version;
+        url = package.url;
+    };
+    unusedSibling = 1 / 0;
+};
+result.summary

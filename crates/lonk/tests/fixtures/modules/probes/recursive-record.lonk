@@ -1,0 +1,10 @@
+// Expected checker error: record construction does not bind its own name.
+let packages = {
+    zlib = {
+        name = "zlib";
+    };
+    editor = {
+        input = packages.zlib.name;
+    };
+};
+packages.editor

@@ -1,0 +1,5 @@
+/lonk.so
+/lonk.wasm
+/src/node-types.json
+/src/tree_sitter/alloc.h
+/src/tree_sitter/array.h

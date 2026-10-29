@@ -1,0 +1,767 @@
+==================
+Bindings, mutation and operators
+==================
+let x: int = 1;
+x += 2;
+if x >= 2 && x != 7 { x * 3 } else { -x }
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (type_identifier)
+    (integer))
+  (assignment_statement
+    (identifier)
+    (integer))
+  (if_expression
+    (binary_expression
+      (binary_expression
+        (identifier)
+        (integer))
+      (binary_expression
+        (identifier)
+        (integer)))
+    (block
+      (binary_expression
+        (identifier)
+        (integer)))
+    (block
+      (unary_expression
+        (identifier)))))
+
+==================
+Rows, optional fields and unions
+==================
+let Box = type<T> {value: T; label?: str; ...};
+let keep = fn<R>(v: &{x: int; ...R}) {
+    let rest: {...R} = v;
+    v = {...rest; x = 42};
+};
+let Mode = type ("fast" | "slow");
+{Box = Box; Mode = Mode; keep = keep}
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (type_expression
+      (type_parameters
+        (identifier))
+      (record_type
+        (type_field
+          (identifier)
+          (type_identifier))
+        (type_field
+          (identifier)
+          (type_identifier))
+        (row_type))))
+  (let_statement
+    (identifier)
+    (function_expression
+      (type_parameters
+        (identifier))
+      (parameters
+        (parameter
+          (identifier)
+          (borrow_type
+            (record_type
+              (type_field
+                (identifier)
+                (type_identifier))
+              (row_type
+                (type_identifier))))))
+      (block
+        (let_statement
+          (identifier)
+          (record_type
+            (row_type
+              (type_identifier)))
+          (identifier))
+        (assignment_statement
+          (identifier)
+          (record
+            (spread
+              (identifier))
+            (record_field
+              (identifier)
+              (integer)))))))
+  (let_statement
+    (identifier)
+    (type_expression
+      (parenthesized_type
+        (union_type
+          (literal_type
+            (string
+              (string_content)))
+          (literal_type
+            (string
+              (string_content)))))))
+  (record
+    (record_field
+      (identifier)
+      (identifier))
+    (record_field
+      (identifier)
+      (identifier))
+    (record_field
+      (identifier)
+      (identifier))))
+
+==================
+Generic calls, callbacks, defaults and methods
+==================
+let use = fn(f: fn<T>(T) -> T) f<int>(4);
+let obj = {x = 1; get = fn(self) self.x; add = fn(&self, n: int = 1) {self.x += n;}};
+obj.add();
+(use(fn<T>(x: T) -> T { x }) + obj.get())
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (function_expression
+      (parameters
+        (parameter
+          (identifier)
+          (function_type
+            (type_parameters
+              (identifier))
+            (function_type_parameter
+              (type_identifier))
+            (type_identifier))))
+      (call_expression
+        (identifier)
+        (call_type_arguments
+          (type_identifier))
+        (arguments
+          (integer)))))
+  (let_statement
+    (identifier)
+    (record
+      (record_field
+        (identifier)
+        (integer))
+      (record_field
+        (identifier)
+        (function_expression
+          (parameters
+            (parameter
+              (identifier)))
+          (field_expression
+            (identifier)
+            (identifier))))
+      (record_field
+        (identifier)
+        (function_expression
+          (parameters
+            (parameter
+              (identifier))
+            (parameter
+              (identifier)
+              (type_identifier)
+              (integer)))
+          (block
+            (assignment_statement
+              (field_expression
+                (identifier)
+                (identifier))
+              (identifier)))))))
+  (expression_statement
+    (call_expression
+      (field_expression
+        (identifier)
+        (identifier))
+      (arguments)))
+  (parenthesized_expression
+    (binary_expression
+      (call_expression
+        (identifier)
+        (arguments
+          (function_expression
+            (type_parameters
+              (identifier))
+            (parameters
+              (parameter
+                (identifier)
+                (type_identifier)))
+            (type_identifier)
+            (block
+              (identifier)))))
+      (call_expression
+        (field_expression
+          (identifier)
+          (identifier))
+        (arguments)))))
+
+==================
+Returns inside loops and matches
+==================
+let find = fn(values: [any]) -> int {
+    for value in values {
+        match value { int => { return value; }; else => {}; };
+    }
+    return 0;
+};
+find([false, 42])
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (function_expression
+      (parameters
+        (parameter
+          (identifier)
+          (array_type
+            (type_identifier))))
+      (type_identifier)
+      (block
+        (for_statement
+          (for_expression
+            (identifier)
+            (identifier)
+            (block
+              (expression_statement
+                (match_expression
+                  (identifier)
+                  (match_arm
+                    (type_identifier)
+                    (block
+                      (return_statement
+                        (identifier))))
+                  (match_arm
+                    (record)))))))
+        (return_statement
+          (integer)))))
+  (call_expression
+    (identifier)
+    (arguments
+      (array
+        (boolean)
+        (integer)))))
+
+==================
+Slices, spreads and unbound methods
+==================
+let xs = [1, 2, 3];
+let length = xs.len;
+{a = xs[:]; b = xs[:2]; c = xs[1:]; d = xs[1:2]; e = [...xs, 4]; n = (xs.len)(xs)}
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (array
+      (integer)
+      (integer)
+      (integer)))
+  (let_statement
+    (identifier)
+    (field_expression
+      (identifier)
+      (identifier)))
+  (record
+    (record_field
+      (identifier)
+      (slice_expression
+        (identifier)))
+    (record_field
+      (identifier)
+      (slice_expression
+        (identifier)
+        (integer)))
+    (record_field
+      (identifier)
+      (slice_expression
+        (identifier)
+        (integer)))
+    (record_field
+      (identifier)
+      (slice_expression
+        (identifier)
+        (integer)
+        (integer)))
+    (record_field
+      (identifier)
+      (array
+        (spread
+          (identifier))
+        (integer)))
+    (record_field
+      (identifier)
+      (call_expression
+        (parenthesized_expression
+          (field_expression
+            (identifier)
+            (identifier)))
+        (arguments
+          (identifier))))))
+
+==================
+Nested comments and multiline strings
+==================
+/* outer /* inner */ done */
+let value = "hello\nworld
+second line"; // retained
+{"quoted-field" = value; "escaped" = "a\"b\\c"}
+---
+
+(source_file
+  (block_comment)
+  (let_statement
+    (identifier)
+    (string
+      (string_content)
+      (escape_sequence)
+      (string_content)))
+  (line_comment)
+  (record
+    (record_field
+      (string
+        (string_content))
+      (identifier))
+    (record_field
+      (string
+        (string_content))
+      (string
+        (string_content)
+        (escape_sequence)
+        (string_content)
+        (escape_sequence)
+        (string_content)))))
+
+==================
+Literal and record pattern arms
+==================
+let v: any = {some = 1};
+match v {
+    {some: int; ...} => v.some;
+    -1 => 0;
+    "none" => 0;
+    true => 1;
+    else => 0;
+}
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (type_identifier)
+    (record
+      (record_field
+        (identifier)
+        (integer))))
+  (match_expression
+    (identifier)
+    (match_arm
+      (record_type
+        (type_field
+          (identifier)
+          (type_identifier))
+        (row_type))
+      (field_expression
+        (identifier)
+        (identifier)))
+    (match_arm
+      (literal_type
+        (integer))
+      (integer))
+    (match_arm
+      (literal_type
+        (string
+          (string_content)))
+      (integer))
+    (match_arm
+      (literal_type
+        (boolean))
+      (integer))
+    (match_arm
+      (integer))))
+
+==================
+Adjacent generic closers and assignment
+==================
+let Box = type<T> {value:T};
+let v:Box<Box<int>>={value={value=42}};
+v
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (type_expression
+      (type_parameters
+        (identifier))
+      (record_type
+        (type_field
+          (identifier)
+          (type_identifier)))))
+  (let_statement
+    (identifier)
+    (generic_type
+      (type_identifier)
+      (type_arguments
+        (generic_type
+          (type_identifier)
+          (type_arguments
+            (type_identifier)))))
+    (record
+      (record_field
+        (identifier)
+        (record
+          (record_field
+            (identifier)
+            (integer))))))
+  (identifier))
+
+==================
+Bare statement blocks and empty records
+==================
+let x = 1;
+{ let a = &x; a = 2; }
+let empty = {};
+{x = x; empty = empty}
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (integer))
+  (block_statement
+    (block
+      (let_statement
+        (identifier)
+        (unary_expression
+          (identifier)))
+      (assignment_statement
+        (identifier)
+        (integer))))
+  (let_statement
+    (identifier)
+    (record))
+  (record
+    (record_field
+      (identifier)
+      (identifier))
+    (record_field
+      (identifier)
+      (identifier))))
+
+==================
+Adjacent comparison and generic call
+==================
+let a = 1;
+let b = 2;
+let f = fn<T>(x: T) -> T { x };
+[if a<b { 1 } else { 2 }, f<int>(1), f<[int]>([1])[0]]
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (integer))
+  (let_statement
+    (identifier)
+    (integer))
+  (let_statement
+    (identifier)
+    (function_expression
+      (type_parameters
+        (identifier))
+      (parameters
+        (parameter
+          (identifier)
+          (type_identifier)))
+      (type_identifier)
+      (block
+        (identifier))))
+  (array
+    (if_expression
+      (binary_expression
+        (identifier)
+        (identifier))
+      (block
+        (integer))
+      (block
+        (integer)))
+    (call_expression
+      (identifier)
+      (call_type_arguments
+        (type_identifier))
+      (arguments
+        (integer)))
+    (index_expression
+      (call_expression
+        (identifier)
+        (call_type_arguments
+          (array_type
+            (type_identifier)))
+        (arguments
+          (array
+            (integer))))
+      (integer))))
+
+==================
+Line-break separators in records, types and arms
+==================
+let f = fn<R>(v: {
+    a: int
+    b?: str
+    ...R
+}) -> int { v.a };
+let x: any = 1;
+let v = {
+    // leading comment
+    a = f({ a = 1 }) // trailing comment
+    /* block */ b = 1
+    + 2
+    ...{ c = 3 }
+    d = match x {
+        int => 1
+        else => 2
+    }
+    e = x
+    in v
+};
+v.d
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (function_expression
+      (type_parameters
+        (identifier))
+      (parameters
+        (parameter
+          (identifier)
+          (record_type
+            (type_field
+              (identifier)
+              (type_identifier))
+            (type_field
+              (identifier)
+              (type_identifier))
+            (row_type
+              (type_identifier)))))
+      (type_identifier)
+      (block
+        (field_expression
+          (identifier)
+          (identifier)))))
+  (let_statement
+    (identifier)
+    (type_identifier)
+    (integer))
+  (let_statement
+    (identifier)
+    (record
+      (line_comment)
+      (record_field
+        (identifier)
+        (call_expression
+          (identifier)
+          (arguments
+            (record
+              (record_field
+                (identifier)
+                (integer))))))
+      (line_comment)
+      (block_comment)
+      (record_field
+        (identifier)
+        (binary_expression
+          (integer)
+          (integer)))
+      (spread
+        (record
+          (record_field
+            (identifier)
+            (integer))))
+      (record_field
+        (identifier)
+        (match_expression
+          (identifier)
+          (match_arm
+            (type_identifier)
+            (integer))
+          (match_arm
+            (integer))))
+      (record_field
+        (identifier)
+        (binary_expression
+          (identifier)
+          (identifier)))))
+  (field_expression
+    (identifier)
+    (identifier)))
+
+==================
+Receiver borrow shortcut and typed self
+==================
+let c = {
+    n = 0;
+    bump = fn(&self, by: int = 1) { self.n += by; };
+    get = fn(self) -> int { self.n };
+    other = fn(self: &{ n: int; ...R }) -> int { self.n };
+};
+c.bump();
+c.get()
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (record
+      (record_field
+        (identifier)
+        (integer))
+      (record_field
+        (identifier)
+        (function_expression
+          (parameters
+            (parameter
+              (identifier))
+            (parameter
+              (identifier)
+              (type_identifier)
+              (integer)))
+          (block
+            (assignment_statement
+              (field_expression
+                (identifier)
+                (identifier))
+              (identifier)))))
+      (record_field
+        (identifier)
+        (function_expression
+          (parameters
+            (parameter
+              (identifier)))
+          (type_identifier)
+          (block
+            (field_expression
+              (identifier)
+              (identifier)))))
+      (record_field
+        (identifier)
+        (function_expression
+          (parameters
+            (parameter
+              (identifier)
+              (borrow_type
+                (record_type
+                  (type_field
+                    (identifier)
+                    (type_identifier))
+                  (row_type
+                    (type_identifier))))))
+          (type_identifier)
+          (block
+            (field_expression
+              (identifier)
+              (identifier)))))))
+  (expression_statement
+    (call_expression
+      (field_expression
+        (identifier)
+        (identifier))
+      (arguments)))
+  (call_expression
+    (field_expression
+      (identifier)
+      (identifier))
+    (arguments)))
+
+==================
+Membership shares equality precedence
+==================
+a == b in c
+---
+
+(source_file
+  (binary_expression
+    (binary_expression
+      (identifier)
+      (identifier))
+    (identifier)))
+
+==================
+Dotted type paths
+==================
+let types = { P = type { a: int }; Box = type<T> { v: T } };
+let p: types.P = { a = 1 };
+let b: types.Box<int> = { v = 2 };
+let f = fn(q: types.P) -> types.P { q };
+[p.a, b.v, f(p).a]
+---
+
+(source_file
+  (let_statement
+    (identifier)
+    (record
+      (record_field
+        (identifier)
+        (type_expression
+          (record_type
+            (type_field
+              (identifier)
+              (type_identifier)))))
+      (record_field
+        (identifier)
+        (type_expression
+          (type_parameters
+            (identifier))
+          (record_type
+            (type_field
+              (identifier)
+              (type_identifier)))))))
+  (let_statement
+    (identifier)
+    (type_path
+      (type_identifier)
+      (type_identifier))
+    (record
+      (record_field
+        (identifier)
+        (integer))))
+  (let_statement
+    (identifier)
+    (generic_type
+      (type_path
+        (type_identifier)
+        (type_identifier))
+      (type_arguments
+        (type_identifier)))
+    (record
+      (record_field
+        (identifier)
+        (integer))))
+  (let_statement
+    (identifier)
+    (function_expression
+      (parameters
+        (parameter
+          (identifier)
+          (type_path
+            (type_identifier)
+            (type_identifier))))
+      (type_path
+        (type_identifier)
+        (type_identifier))
+      (block
+        (identifier))))
+  (array
+    (field_expression
+      (identifier)
+      (identifier))
+    (field_expression
+      (identifier)
+      (identifier))
+    (field_expression
+      (call_expression
+        (identifier)
+        (arguments
+          (identifier)))
+      (identifier))))

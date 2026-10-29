@@ -1,0 +1,41 @@
+// One callback works at several types; its contract is checked universally.
+let apply = fn(identity: fn<T>(T) -> T) ({
+    number = identity(42);
+    text = identity("hello");
+});
+let base = {
+    value = 1;
+    add = fn(&self, amount: int = 1) {
+        self.value += amount;
+    };
+};
+// This typed copy exposes the inferred receiver row in a named contract.
+let counter: {
+    value: int;
+    add: fn<R>(self: &{
+        value: int;
+        ...R;
+    }, int = ...);
+} = base;
+let extended = {
+    ...counter;
+    label = "preserved";
+    twice = fn<R>(self: &{
+        value: int;
+        add: fn<S>(self: &{
+            value: int;
+            ...S;
+        }, int = ...);
+        ...R;
+    }) {
+        self.add();
+        self.add(2);
+    };
+};
+extended.twice();
+{
+    callback = apply(fn(value) value);
+    before = base.value;
+    after = extended.value;
+    label = extended.label;
+}

@@ -1,0 +1,17 @@
+// A nested pattern validates one path while leaving unrelated fields lazy.
+let value: any = {
+    settings = {
+        port = 8080;
+        expensive = 1 / 0;
+    };
+};
+match value {
+    {
+        settings: {
+            port: int;
+            ...;
+        };
+        ...;
+    } => value.settings.port;
+    else => 0;
+}

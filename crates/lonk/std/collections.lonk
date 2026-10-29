@@ -1,0 +1,196 @@
+// Collection algorithms are ordinary checked language code. Only representation
+// operations and string primitives cross into the evaluator.
+let array = {
+    len = core.array_len;
+    join = core.string_join;
+    append = fn<T>(values: [T], value: T) -> [T] {
+        [
+            ...values,
+            value,
+        ]
+    };
+    concat = fn<T>(values: [T], more: [T]) -> [T] {
+        [
+            ...values,
+            ...more,
+        ]
+    };
+    push = fn<T>(values: &[T], value: T) {
+        values = [
+            ...values,
+            value,
+        ];
+    };
+    extend = fn<T>(values: &[T], more: [T]) {
+        values = [
+            ...values,
+            ...more,
+        ];
+    };
+    insert = fn<T>(values: [T], at: int, value: T) -> [T] {
+        [
+            ...values[:at],
+            value,
+            ...values[at:],
+        ]
+    };
+    remove_at = fn<T>(values: [T], at: int) -> [T] {
+        [
+            ...values[:at],
+            ...values[at + 1:],
+        ]
+    };
+    take = fn<T>(values: [T], count: int) -> [T] {
+        values[:count]
+    };
+    drop = fn<T>(values: [T], count: int) -> [T] {
+        values[count:]
+    };
+    slice = fn<T>(values: [T], start: int = 0, end: int = core.array_len(values)) -> [T] {
+        values[start:end]
+    };
+    splice = fn<T>(values: [T], start: int, end: int, replacement: [T]) -> [T] {
+        // Validate the range even when both exterior slices would be valid.
+        let removed = values[start:end];
+        [
+            ...values[:start],
+            ...replacement,
+            ...values[start + core.array_len(removed):],
+        ]
+    };
+    map = fn<T, U>(values: [T], transform: fn(T) -> U) -> [U] {
+        let result: [U] = [];
+        for value in values {
+            result = [
+                ...result,
+                transform(value),
+            ];
+        };
+        result
+    };
+    filter = fn<T>(values: [T], keep: fn(T) -> bool) -> [T] {
+        let result: [T] = [];
+        for value in values {
+            if keep(value) {
+                result = [
+                    ...result,
+                    value,
+                ];
+            };
+        };
+        result
+    };
+    fold = fn<T, U>(values: [T], initial: U, combine: fn(U, T) -> U) -> U {
+        let result = initial;
+        for value in values {
+            result = combine(result, value);
+        };
+        result
+    };
+    find = fn<T>(values: [T], predicate: fn(T) -> bool) -> {
+        value?: T;
+    } {
+        for value in values {
+            if predicate(value) {
+                return {
+                    value = value;
+                };
+            };
+        };
+        {}
+    };
+    contains = fn<T>(values: [T], needle: T, equal: fn(T, T) -> bool) -> bool {
+        for value in values {
+            if equal(value, needle) {
+                return true;
+            };
+        };
+        false
+    };
+    index_of = fn<T>(values: [T], needle: T, equal: fn(T, T) -> bool) -> {
+        index?: int;
+    } {
+        let index = 0;
+        for value in values {
+            if equal(value, needle) {
+                return {
+                    index = index;
+                };
+            };
+            index += 1;
+        };
+        {}
+    };
+    any = fn<T>(values: [T], predicate: fn(T) -> bool) -> bool {
+        for value in values {
+            if predicate(value) {
+                return true;
+            };
+        };
+        false
+    };
+    all = fn<T>(values: [T], predicate: fn(T) -> bool) -> bool {
+        for value in values {
+            if !predicate(value) {
+                return false;
+            };
+        };
+        true
+    };
+    reverse = fn<T>(values: [T]) -> [T] {
+        let result: [T] = [];
+        for value in values {
+            result = [
+                value,
+                ...result,
+            ];
+        };
+        result
+    };
+    first = fn<T>(values: [T]) -> {
+        value?: T;
+    } {
+        if core.array_len(values) == 0 {
+            return {};
+        };
+        {
+            value = values[0];
+        }
+    };
+    last = fn<T>(values: [T]) -> {
+        value?: T;
+    } {
+        if core.array_len(values) == 0 {
+            return {};
+        };
+        {
+            value = values[core.array_len(values) - 1];
+        }
+    };
+};
+{
+    array = array;
+    object = {
+        len = core.object_len;
+        keys = core.object_keys;
+        remove = core.object_remove;
+        lookup = core.object_lookup;
+        with = core.object_with;
+    };
+    string = {
+        len = core.string_len;
+        split = core.string_split;
+        join = core.string_join;
+        contains = core.string_contains;
+        starts_with = core.string_starts_with;
+        ends_with = core.string_ends_with;
+        replace = core.string_replace;
+        trim = core.string_trim;
+    };
+    integer = {
+        to_str = core.int_string;
+    };
+    boolean = {
+        to_str = core.bool_string;
+    };
+}

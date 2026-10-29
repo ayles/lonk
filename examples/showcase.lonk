@@ -1,0 +1,61 @@
+// A structural type: ordinary objects can satisfy this contract.
+let Service = type {
+    name: str;
+    port: int;
+    version: str;
+};
+// Check dynamic input once; the matching arm knows that port is an int.
+let make_service = fn(config: any) -> Service {
+    let port = match config {
+        {
+            port: int;
+            ...;
+        } => config.port;
+        else => 8080;
+    };
+    {
+        name = "web";
+        port = port;
+        version = "1.0";
+    }
+};
+// This field would fail if evaluated, but the service only needs port.
+let config = {
+    port = 8000;
+    unused = 1 / 0;
+};
+let service = make_service(config);
+// Copies and closures remember the value at the point they were created.
+let original = service;
+let pinned_label = fn() -> str {
+    service.name + "-" + service.version
+};
+service.version = "2.0";
+// An explicitly typed copy keeps only the fields declared by Service.
+let with_metadata = {
+    ...service;
+    build_log = 1 / 0;
+};
+let public: Service = with_metadata;
+// Arrays follow the same snapshot rule, including indexed updates.
+let ports = [
+    original.port,
+    public.port,
+];
+let original_ports = ports;
+ports[1] = 9000;
+{
+    snapshots = {
+        before = original;
+        after = public;
+        captured_label = pinned_label();
+    };
+    arrays = {
+        before = original_ports;
+        after = ports;
+    };
+    // A present field with the wrong type takes the fallback arm.
+    fallback_port = make_service({
+        port = "not an integer";
+    }).port;
+}

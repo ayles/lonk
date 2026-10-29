@@ -1,0 +1,18 @@
+// Package functions receive dependencies explicitly. Recalling this factory
+// with new inputs rebuilds the dependent graph without changing older snapshots.
+fn(system: str, zlib_version: str = "1") {
+    let cc = compiler(system);
+    let lib = zlib(system, cc, zlib_version);
+    {
+        toolchain = {
+            cc = cc;
+        };
+        libraries = {
+            zlib = lib;
+        };
+        apps = {
+            editor = editor(cc, lib);
+        };
+        unavailable = 1 / 0;
+    }
+}

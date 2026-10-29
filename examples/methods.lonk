@@ -1,0 +1,34 @@
+let new_counter = fn(start: int) ({
+    value = start;
+    // The first parameter marks the method; &self writes through the receiver.
+    add = fn(&self, amount: int = 1) {
+        self.value += amount;
+    };
+    read = fn(self) -> int {
+        self.value
+    };
+});
+let counter = new_counter(10);
+let before = counter;
+let captured = fn() before.read();
+counter.add();
+// A copied method is unbound and requires its receiver explicitly.
+let add = counter.add;
+add(&counter, 4);
+// Extensions retain their fields through inferred receiver methods.
+let extended = {
+    ...counter;
+    label = "kept";
+};
+extended.add(10);
+// Ordinary callable fields do not receive an implicit first argument.
+let math = {
+    double = fn(n: int) n * 2;
+};
+{
+    before = captured();
+    after = counter.read();
+    extended = extended.read();
+    label = extended.label;
+    doubled = math.double(counter.read());
+}

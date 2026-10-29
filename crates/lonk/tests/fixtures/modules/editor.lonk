@@ -1,0 +1,17 @@
+let Package = types.Package;
+fn(compiler: Package, zlib: Package) -> Package {
+    return {
+        name = "editor";
+        version = "3";
+        system = compiler.system;
+        inputs = [
+            compiler.name + "-" + compiler.version,
+            zlib.name + "-" + zlib.version,
+        ];
+        script = [
+            "configure",
+            "--with-zlib=" + zlib.name,
+            "&& make",
+        ].join(" ");
+    };
+}

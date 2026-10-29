@@ -1,0 +1,102 @@
+// Generic library collections built from ordinary objects, arrays and functions.
+// Inferred receivers preserve the remaining fields when the object is extended.
+let new_dictionary = fn<K, V>(equal: fn(K, K) -> bool) {
+    let Entry = type {
+        key: K;
+        value: V;
+    };
+    let entries: [Entry] = [];
+    {
+        entries = entries;
+        get = fn(self, key: K) -> {
+            value?: V;
+        } {
+            let found: {
+                value?: V;
+            } = {};
+            for entry in self.entries {
+                if equal(entry.key, key) {
+                    found.value = entry.value;
+                };
+            };
+            found
+        };
+        set = fn(&self, key: K, value: V) {
+            let updated: [Entry] = [];
+            let found = false;
+            for entry in self.entries {
+                if equal(entry.key, key) {
+                    updated = [
+                        ...updated,
+                        {
+                            key = key;
+                            value = value;
+                        },
+                    ];
+                    found = true;
+                } else {
+                    updated = [
+                        ...updated,
+                        entry,
+                    ];
+                };
+            };
+            if !found {
+                updated = [
+                    ...updated,
+                    {
+                        key = key;
+                        value = value;
+                    },
+                ];
+            };
+            self.entries = updated;
+        };
+    }
+};
+let map = fn<T, U>(items: [T], transform: fn(T) -> U) -> [U] {
+    let result: [U] = [];
+    for item in items {
+        result = [
+            ...result,
+            transform(item),
+        ];
+    };
+    result
+};
+let factorial = fn(n: int) -> int {
+    if n == 0 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+};
+let dictionary = new_dictionary<int, str>(fn(a, b) a == b);
+dictionary.set(7, "first");
+let snapshot = dictionary;
+dictionary.set(7, "updated");
+dictionary.set(9, "another");
+let found = dictionary.get(7);
+let lookup = match found {
+    {
+        value: any;
+    } => found.value;
+    else => "missing";
+};
+{
+    before = snapshot.entries;
+    after = dictionary.entries;
+    lookup = lookup;
+    missing = dictionary.get(99);
+    squares = map([
+        1,
+        2,
+        3,
+        4,
+    ], fn(n) n * n);
+    factorial = factorial(10);
+    lazy = map([
+        1 / 0,
+        42,
+    ], fn(n) n)[1];
+}

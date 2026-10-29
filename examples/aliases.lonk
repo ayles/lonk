@@ -1,0 +1,38 @@
+let increment = fn(value: &int) {
+    value += 1;
+};
+let settings = {
+    server = {
+        port = 8000;
+    };
+    retries = 3;
+};
+let before = settings;
+let captured = {
+    let port = &settings.server.port;
+    increment(&port);
+    port += 1;
+    // A disjoint field remains available while port is borrowed.
+    settings.retries += 1;
+    fn() port
+};
+// The alias has ended; its parent is available again.
+settings.server.port += 10;
+let numbers = [
+    10,
+    20,
+];
+let index = 0;
+{
+    let selected = &numbers[index];
+    index = 1;
+    // This still updates the original location at index zero.
+    selected += 5;
+};
+{
+    before = before;
+    after = settings;
+    captured_port = captured();
+    numbers = numbers;
+    changed_index = index;
+}

@@ -1,0 +1,11 @@
+// Expected checker error: removing one field currently forgets all field facts.
+let packages = {
+    editor = {
+        name = "editor";
+    };
+    helper = {
+        name = "helper";
+    };
+};
+let reduced = object.remove(packages, "helper");
+reduced.editor.name

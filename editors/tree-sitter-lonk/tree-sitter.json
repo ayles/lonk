@@ -1,0 +1,7 @@
+{
+  "grammars": [{
+    "name": "lonk", "camelcase": "Lonk", "scope": "source.lonk", "path": ".",
+    "file-types": ["lonk"], "highlights": "queries/highlights.scm", "locals": "queries/locals.scm"
+  }],
+  "metadata": {"version": "0.1.0", "license": "Apache-2.0", "description": "Lonk snapshot language grammar"}
+}

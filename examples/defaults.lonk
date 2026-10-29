@@ -1,0 +1,37 @@
+let retries = 3;
+let request = fn(url: str, attempts: int = retries) ({
+    url = url;
+    attempts = attempts;
+});
+retries = 5;
+let entry_snapshot = fn(first: int, next: int = first + 1) {
+    first += 10;
+    {
+        changed = first;
+        default = next;
+    }
+};
+let repeat = fn<T>(item: T, items: [T] = [
+    item,
+]) -> [T] {
+    [
+        item,
+        ...items,
+    ]
+};
+let lazy = fn(answer: int = 1 / 0) -> int {
+    42
+};
+let available: fn(str, int = ...) -> {
+    url: str;
+    attempts: int;
+} = request;
+{
+    captured = available("example.invalid");
+    overridden = request("example.invalid", 8);
+    current_retries = retries;
+    first_call = entry_snapshot(1);
+    second_call = entry_snapshot(10);
+    repeated = repeat("hello");
+    lazy = lazy();
+}

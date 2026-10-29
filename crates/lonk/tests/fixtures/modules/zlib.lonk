@@ -1,0 +1,12 @@
+let Package = types.Package;
+fn(system: str, compiler: Package, version: str = "1") -> Package {
+    return {
+        name = "zlib";
+        version = version;
+        system = system;
+        inputs = [
+            compiler.name + "-" + compiler.version,
+        ];
+        script = "configure --cc=" + compiler.name + " && make";
+    };
+}

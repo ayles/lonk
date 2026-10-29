@@ -1,0 +1,24 @@
+let Config = types.Config;
+let Module = types.Module;
+{
+    apply = fn(initial: Config, modules: [Module]) -> Config {
+        let config = initial;
+        for configure in modules {
+            configure(&config);
+        };
+        config
+    };
+    validate = fn(config: Config) -> [str] {
+        let seen: [str] = [];
+        let errors: [str] = [];
+        for service in config.services {
+            if seen.contains(service.name, fn(a: str, b: str) -> bool {
+                a == b
+            }) {
+                errors.push("duplicate service: " + service.name);
+            };
+            seen.push(service.name);
+        };
+        errors
+    };
+}

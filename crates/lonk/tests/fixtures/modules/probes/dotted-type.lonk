@@ -1,0 +1,4 @@
+// Accepted: a type path selects an exported type value directly.
+let types = {Package = type {name: str}};
+let package: types.Package = {name = "editor"};
+package

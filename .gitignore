@@ -1,0 +1,21 @@
+/target/
+/result
+/result-*
+/.direnv/
+/output/
+
+# Local configuration and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Local agent notes, retained until review is complete
+/AGENTS.md
+/CODEX_TO_CLAUDE.md
+/CLAUDE_TO_CODEX.md

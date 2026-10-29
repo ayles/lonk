@@ -1,0 +1,57 @@
+// A Nix-style final package set can be expressed as an ordinary library function.
+// Each recursive call is lazy; this implementation does not share recursion levels.
+let Package = type {
+    name: str;
+    version: str;
+    inputs: [str];
+};
+let Packages = type {
+    cc: Package;
+    zlib: Package;
+    editor: Package;
+    unavailable: int;
+};
+let fix = fn(make: fn(Packages) -> Packages) -> Packages {
+    make(fix(make))
+};
+let base = fn(final: Packages) -> Packages {
+    {
+        cc = {
+            name = "cc";
+            version = "1";
+            inputs = [];
+        };
+        zlib = {
+            name = "zlib";
+            version = "1";
+            inputs = [
+                final.cc.name + "-" + final.cc.version,
+            ];
+        };
+        editor = {
+            name = "editor";
+            version = "3";
+            inputs = [
+                final.zlib.name + "-" + final.zlib.version,
+            ];
+        };
+        unavailable = 1 / 0;
+    }
+};
+let overlay = fn(final: Packages) -> Packages {
+    let previous = base(final);
+    {
+        ...previous;
+        zlib = {
+            ...previous.zlib;
+            version = "2";
+        };
+    }
+};
+let original = fix(base);
+let overlaid = fix(overlay);
+{
+    original_inputs = original.editor.inputs;
+    overlaid_inputs = overlaid.editor.inputs;
+    overlaid_library_inputs = overlaid.zlib.inputs;
+}

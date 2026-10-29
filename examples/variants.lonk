@@ -1,0 +1,71 @@
+// Literal alternatives need no constructors or nominal enum declarations.
+let Mode = type ("debug" | "release");
+let describe_mode = fn(mode: Mode) -> str {
+    match mode {
+        "debug" => "with diagnostics";
+        "release" => "optimized";
+    }
+};
+// Payload cases are ordinary single-field objects.
+let Source = type ({
+    local: str;
+} | {
+    git: {
+        url: str;
+        revision: str;
+    };
+});
+let describe_source = fn(source: Source) -> str {
+    match source {
+        {
+            local: str;
+        } => source.local;
+        {
+            git: {
+                url: str;
+                revision: str;
+            };
+        } => source.git.url;
+    }
+};
+let source: Source = {
+    git = {
+        url = "example.invalid/repo";
+        revision = if 1 / 0 == 0 {
+            "unused"
+        } else {
+            "still unused"
+        };
+    };
+};
+// A generic option is a library type, not a special built-in value.
+let Option = type<T> ("none" | {
+    some: T;
+});
+let get_or = fn<T>(option: Option<T>, fallback: T) -> T {
+    match option {
+        "none" => fallback;
+        {
+            some: any;
+            ...;
+        } => option.some;
+    }
+};
+// Matching dynamic input establishes the evidence needed for admission.
+let dynamic: any = "release";
+let mode = match dynamic {
+    Mode => describe_mode(dynamic);
+    else => "unknown mode";
+};
+{
+    mode = mode;
+    source = describe_source(source);
+    present = get_or({
+        some = 42;
+    }, 0);
+    absent = get_or("none", 7);
+    boolean = match true {
+        true => "yes";
+        false => "no";
+    };
+}

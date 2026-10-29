@@ -1,0 +1,31 @@
+let packages = catalog("x86_64-linux");
+let saved = packages;
+// A shallow override is a snapshot change. Existing dependent values retain
+// the dependencies they were constructed with.
+let overridden = {
+    ...packages;
+    libraries = {
+        zlib = {
+            ...packages.libraries.zlib;
+            version = "2";
+        };
+    };
+};
+let rebuilt = catalog("x86_64-linux", "2");
+let cross = catalog("aarch64-linux");
+let public: {
+    name: str;
+    version: str;
+} = rebuilt.apps.editor;
+let without_editor = object.remove(rebuilt.apps, "editor");
+{
+    original_inputs = saved.apps.editor.inputs;
+    overridden_version = overridden.libraries.zlib.version;
+    overridden_inputs = overridden.apps.editor.inputs;
+    rebuilt_inputs = rebuilt.apps.editor.inputs;
+    cross_system = cross.apps.editor.system;
+    public = public;
+    remaining_apps = object.keys(without_editor);
+    build_script = rebuilt.apps.editor.script;
+    selected_name = packages.apps.editor.name;
+}

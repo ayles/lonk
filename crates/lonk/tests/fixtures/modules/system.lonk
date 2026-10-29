@@ -1,0 +1,39 @@
+let Config = types.Config;
+let Module = types.Module;
+let packages = catalog("x86_64-linux", "2");
+let base: Config = {
+    hostname = "base";
+    packages = [];
+    services = [];
+    firewall = [];
+};
+let install: Module = fn(config: &Config) {
+    config.packages.push(packages.apps.editor);
+};
+let configured = merge.apply(base, [
+    services.hostname("workstation"),
+    install,
+    services.ssh(true, 2222),
+    services.ssh(false),
+    services.editor(packages.apps.editor.name),
+    services.firewall(),
+]);
+let duplicate = merge.apply(configured, [
+    services.ssh(true),
+]);
+let reordered = merge.apply(base, [
+    services.hostname("first"),
+    services.hostname("last"),
+]);
+let finalized_too_early = merge.apply(base, [
+    services.firewall(),
+    services.ssh(true, 2222),
+]);
+{
+    config = configured;
+    original = base;
+    errors = merge.validate(configured);
+    duplicate_errors = merge.validate(duplicate);
+    last_hostname = reordered.hostname;
+    early_firewall = finalized_too_early.firewall;
+}

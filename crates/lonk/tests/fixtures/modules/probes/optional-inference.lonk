@@ -1,0 +1,11 @@
+// Accepted: a fresh literal is checked against the established element type.
+let Service = type {
+    name: str;
+    port?: int;
+};
+let services: [Service] = [];
+services.push({
+    name = "sshd";
+    port = 22;
+});
+services
