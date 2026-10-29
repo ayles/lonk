@@ -11,6 +11,9 @@ contains implementation modules; `std/` contains checked Lonk collection helpers
 share private graph, type and evaluator representations. They remain in one crate
 until a useful independent API boundary justifies a split.
 
+The proposed [IR and execution model](execution.md) separates checking,
+optimization and bytecode execution. It is a target design, not the current runtime.
+
 ## From source to a value
 
 The embedder supplies immutable source strings and, for modules, an explicit map
