@@ -56,6 +56,17 @@ writable-borrow admission. Check all source before evaluation. Lower mutation
 into immutable versions and borrowed outputs into explicit results. Snapshot
 semantics do not change.
 
+Value-producing expressions are logically deferred until demanded. This applies
+equally to local arithmetic and function calls: `let b = a + 1` and
+`let b = bar(a)`, with `bar(v) = v + 1`, have the same demand behavior.
+Inlining a function does not itself authorize earlier evaluation. A source
+function boundary is neither a mandatory thunk boundary nor evidence of strictness.
+
+Logical suspension does not require allocating one heap object per expression.
+Allocation and instruction grouping implement that demand behavior; they cannot
+change it. Executing a required dependency directly after entering its consumer
+is different from executing it merely because its source statement was reached.
+
 Preserve these observations in every execution mode:
 
 - Selecting one result does not demand unrelated results, including ordinary
@@ -155,6 +166,12 @@ in their prescribed order. Operations do not each acquire a thunk, hash key,
 memo-table entry or scheduler task. Allocate a suspended cell when work must
 remain unevaluated and escape, or when independent consumers must share it.
 An uncertain escape/use case takes the general shared-cell path.
+
+Group expressions by their demand and sharing relationships, not merely because
+their source statements are adjacent. For `b = bar(a)`, the suspension for `b`
+contains the call; after inlining it contains the addition and the required force
+of `a`. The surrounding demand boundary remains in place. A conditional within
+that chunk still demands only its selected branch.
 
 For example, one field of this function is one demanded instruction sequence:
 
